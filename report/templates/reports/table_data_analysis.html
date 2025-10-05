@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}{% endblock %}
+
+{% block main_content %}
+    <div id="main_content" class="row">
+        <!-- 侧边栏 - 透视表配置 -->
+        <div class="col-md-3 sidebar">
+            <div class="p-3">
+                <h5>透视表配置</h5>
+                <!-- 行标签 -->
+                <div class="control-group">
+                    <div class="control-label">行标签</div>
+                    <div class="field-list" id="indexFields">
+                        {% for column in columns %}
+                            <div class="field-item" data-field="{{ column.name }}" onclick="toggleField(this, 'index')">
+                                {{ column.name }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- 列标签 -->
+                <div class="control-group">
+                    <div class="control-label">列标签</div>
+                    <div class="field-list" id="columnFields">
+                        {% for column in columns %}
+                            <div class="field-item" data-field="{{ column.name }}"
+                                 onclick="toggleField(this, 'column')">
+                                {{ column.name }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- 值字段 -->
+                <div class="control-group">
+                    <div class="control-label">值字段</div>
+                    <div class="field-list" id="valueFields">
+                        {% for column in columns %}
+                            <div class="field-item" data-field="{{ column.name }}" onclick="toggleField(this, 'value')">
+                                {{ column.name }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- 聚合函数 -->
+                <div class="control-group">
+                    <div class="control-label">聚合方式</div>
+                    <select class="form-select" id="aggfunc">
+                        <option value="sum">求和</option>
+                        <option value="mean">平均值</option>
+                        <option value="count">计数</option>
+                        <option value="min">最小值</option>
+                        <option value="max">最大值</option>
+                    </select>
+                </div>
+
+                <div class="mt-3">
+                    <button class="btn btn-primary w-100" onclick="createPivotTable()">生成透视表</button>
+                    <button class="btn btn-outline-secondary w-100 mt-2" onclick="resetPivot()">重置选择</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主内容区 - Luckysheet -->
+        <div class="col-md-9">
+            <div id="luckysheet" class="luckysheet-container"></div>
+        </div>
+    </div>
+
+
+    <script>
+        // 初始化Luckysheet
+        function initLuckysheet(data) {
+            const options = {
+                container: 'luckysheet',
+                lang: 'zh',
+                showinfobar: false,
+                showsheetbar: true,
+                showtoolbar: true,
+                showstatisticBar: true,
+                data: data
+            };
+            luckysheet.create(options);
+        }
+
+        // 初始化数据
+        const initialData = {{ luckysheet_data | safe }};
+        initLuckysheet(initialData);
+
+        // 透视表配置
+        const pivotConfig = {
+            index: [],
+            columns: [],
+            values: [],
+            aggfunc: 'sum'
+        };
+
+        // 切换字段选择
+        function toggleField(element, type) {
+            const field = element.getAttribute('data-field');
+            const index = pivotConfig[type].indexOf(field);
+
+            if (index === -1) {
+                // 添加字段
+                pivotConfig[type].push(field);
+                element.classList.add('selected');
+            } else {
+                // 移除字段
+                pivotConfig[type].splice(index, 1);
+                element.classList.remove('selected');
+            }
+        }
+
+        // 创建透视表
+        function createPivotTable() {
+            pivotConfig.aggfunc = document.getElementById('aggfunc').value;
+
+            // 发送请求创建透视表
+            fetch(`/reports/table/{{ table_name }}/pivot`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(pivotConfig)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 销毁当前表格并创建新的透视表
+                    luckysheet.destroy();
+                    setTimeout(() => {
+                        initLuckysheet(data.data);
+                    }, 100);
+                } else {
+                    alert('创建透视表失败: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('创建透视表时发生错误');
+            });
+        }
+
+        // 重置透视表配置
+        function resetPivot() {
+            // 重置配置
+            pivotConfig.index = [];
+            pivotConfig.columns = [];
+            pivotConfig.values = [];
+
+            // 重置UI
+            document.querySelectorAll('.field-item.selected').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            // 重新加载原始数据
+            luckysheet.destroy();
+            setTimeout(() => {
+                initLuckysheet(initialData);
+            }, 100);
+        }
+    </script>
+{% endblock %}

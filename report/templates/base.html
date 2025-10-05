@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}正和城邦报表系统{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='libs/bootstrap/css/bootstrap.min.css') }}">
+    <link rel='stylesheet' href="{{ url_for('static', filename='libs/Luckysheet/plugins/css/pluginsCss.css') }}"/>
+    <link rel='stylesheet' href="{{ url_for('static', filename='libs/Luckysheet/plugins/plugins.css') }}"/>
+    <link rel='stylesheet' href="{{ url_for('static', filename='libs/Luckysheet/css/luckysheet.css') }}"/>
+    <link rel='stylesheet' href="{{ url_for('static', filename='libs/Luckysheet/assets/iconfont/iconfont.css') }}"/>
+
+    <script src="{{ url_for('static', filename='libs/Luckysheet/plugins/js/plugin.js') }}"></script>
+    <script src="{{ url_for('static', filename='libs/Luckysheet/luckysheet.umd.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='libs/bootstrap/js/bootstrap.min.js') }}"></script>
+    {% block style %} {% endblock %}
+    <style>
+
+
+        .sidebar {
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .luckysheet-container {
+            height: calc(100vh - 60px);
+        }
+
+        .pivot-controls {
+            margin-bottom: 15px;
+        }
+
+        .control-group {
+            margin-bottom: 10px;
+        }
+
+        .control-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .field-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 5px;
+            background: white;
+        }
+
+        .field-item {
+            padding: 2px 5px;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-bottom: 2px;
+        }
+
+        .field-item:hover {
+            background-color: #e9ecef;
+        }
+
+        .field-item.selected {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div class="main-container">
+    <header class="header">
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">
+                    <i class="bi bi-graph-up"></i> 正和城邦报表系统
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link active dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                               aria-expanded="false">
+                                <i class="bi bi-bar-chart-line"></i> 报表中心
+                            </a>
+                            <ul class="dropdown-menu">
+                                <!-- 财务报表 - 二级菜单 -->
+                                <li class="dropend"> <!-- 使用dropend让子菜单在右侧展开 -->
+                                    <a class="dropdown-item dropdown-toggle" href="#" role="button"
+                                       data-bs-toggle="dropdown"
+                                       aria-expanded="false">
+                                        <i class="bi bi-file-earmark-spreadsheet"></i> 财务报表
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <!-- 三级菜单项 -->
+                                        <li><a class="dropdown-item"
+                                               href="/reports/receivable_details_csv?report_date={{ sysdate }}">
+                                            <i class="bi bi-receipt"></i> 南瑞路项目租金管理费应收账表明细表
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#">
+                                            <i class="bi bi-receipt"></i> 其他项目应收明细
+                                        </a></li>
+                                    </ul>
+                                </li>
+
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-text"></i>
+                                    销售报表</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-people"></i> 客户报表</a>
+                                </li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-box-seam"></i>
+                                    库存报表</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-graph-up-arrow"></i> 业绩分析</a>
+                                </li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-clock-history"></i> 历史数据</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">数据分析</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">系统设置</a>
+                        </li>
+                    </ul>
+                    <div class="navbar-nav">
+                        <a class="nav-link" href="#"><i class="bi bi-bell"></i> 通知</a>
+                        <a class="nav-link" href="#"><i class="bi bi-person-circle"></i> 用户中心</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <!-- 中间内容区域 -->
+    <main class="main-content">
+        <div class="container-fluid h-100">
+            <div class="row h-100">
+                <div class="col-12 h-100">
+                    <div class="report-container">
+                        {% block report_container_content %}{% endblock %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 底部区域 -->
+    <footer class="footer">
+        <div class="container-fluid text-center">
+            <span>&copy; 2025 南京正和承邦商业管理有限公司. 版权所有.</span>
+        </div>
+    </footer>
+</div>
+{% block scripts %}{% endblock %}
+</body>
+{#        <script src="{{ url_for('static', filename='libs/jQuery/jquery-3.7.1.min.js') }}"></script>#}
+
+</html>

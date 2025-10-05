@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}{% endblock %}
+
+{% block main_content %}
+    <h3 class="mb-4"><span>南瑞路项目租金管理费应收账表明细表</span></h3>
+    <div id="luckysheet" class="w-100"
+         style="height: calc(100% - 60px); min-height: 500px; background: #f0f8ff; border: 1px dashed #3498db; display: flex; align-items: center; justify-content: center;">
+    </div>
+    <script>
+        $(function () {
+            var options = {
+                container: 'luckysheet', //luckysheet is the container id
+                title: '项目租金管理费应收账表明细表',
+                lang: 'zh',
+                showinfobar: false, // 隐藏顶部信息栏
+                showtoolbar: false, // 隐藏顶部工具栏
+                showsheetbar: false, // 隐藏底部sheet页签
+                showstatisticBar: false, // 隐藏底部计数栏
+                sheetFormulaBar: false, // 隐藏公式栏
+                loadUrl: '/reports/FetchData/ReceivableDetails'
+            }
+            luckysheet.create(options)
+        })
+    </script>
+{% endblock %}
