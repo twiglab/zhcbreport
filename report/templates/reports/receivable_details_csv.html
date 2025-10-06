@@ -4,15 +4,13 @@
 
 {% block style %}
     <style>
-        .container {
-            margin-top: 20px;
-        }
-
         .table-container {
             margin-top: 20px;
-            overflow-x: auto;
+            overflow: auto;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             border-radius: 5px;
+            position: relative;
+            max-height: 70vh;
         }
 
         .stats {
@@ -42,57 +40,104 @@
             border-color: #1e7e34;
         }
 
-        /* Excel样式表格 */
-        .excel-table {
-            width: 100%;
+        /* 冻结表格样式 */
+        .frozen-table-wrapper {
+            position: relative;
+            overflow: auto;
+            max-height: 70vh;
+            border: 1px solid #d0d0d0;
+        }
+
+        .frozen-table {
+            width: auto;
             border-collapse: collapse;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             font-size: 14px;
-            table-layout: fixed; /* 固定表格布局，防止内容撑开 */
+            min-width: 100%;
         }
 
-        .excel-table th {
+        .frozen-table th {
             background-color: #f0f0f0;
             color: #000;
             font-weight: 600;
             border: 1px solid #d0d0d0;
             padding: 8px 10px;
-            text-align: center;
-            white-space: nowrap; /* 表头不换行 */
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             position: sticky;
-            top: 0;
             z-index: 10;
         }
 
-        .excel-table td {
+        .frozen-table td {
             border: 1px solid #e0e0e0;
             padding: 6px 10px;
-            white-space: nowrap; /* 单元格内容不换行 */
+            white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis; /* 超出部分显示省略号 */
+            text-overflow: ellipsis;
             vertical-align: middle;
+            background-color: white;
         }
 
-        .excel-table tr:nth-child(even) {
-            background-color: #f9f9f9; /* 偶数行浅灰色背景 */
+        /* 冻结前3行 */
+        .frozen-table thead th {
+            top: 0;
+            z-index: 20;
         }
 
-        .excel-table tr:hover {
-            background-color: #e6f3ff; /* 鼠标悬停时的浅蓝色背景 */
+        /* 冻结前2列 */
+        .frozen-column {
+            position: sticky;
+            left: 0;
+            z-index: 15;
+            background-color: #f8f9fa !important;
         }
 
-        .excel-table thead tr:first-child th {
+        .frozen-column-2 {
+            position: sticky;
+            left: 0;
+            z-index: 15;
+            background-color: #f8f9fa !important;
+        }
+
+        /* 冻结行列交叉点 - 最高优先级 */
+        .frozen-corner {
+            z-index: 25 !important;
+            background-color: #e6e6e6 !important;
+        }
+
+        /* 行样式 */
+        .frozen-table tr:nth-child(even) td {
+            background-color: #f9f9f9;
+        }
+
+        .frozen-table tr:nth-child(even) .frozen-column,
+        .frozen-table tr:nth-child(even) .frozen-column-2 {
+            background-color: #f1f1f1 !important;
+        }
+
+        .frozen-table tr:hover td {
+            background-color: #e6f3ff;
+        }
+
+        .frozen-table tr:hover .frozen-column,
+        .frozen-table tr:hover .frozen-column-2 {
+            background-color: #d4e8ff !important;
+        }
+
+        /* 表头层次 */
+        .frozen-table thead tr:first-child th {
             background-color: #e6e6e6;
             border-bottom: 2px solid #c0c0c0;
+            top: 0;
         }
 
-        /* 表格容器样式 */
-        .table-wrapper {
-            max-height: 70vh;
-            overflow: auto;
-            border: 1px solid #d0d0d0;
+        .frozen-table thead tr:nth-child(2) th {
+            top: 34px; /* 根据第一行高度调整 */
+        }
+
+        .frozen-table thead tr:nth-child(3) th {
+            top: 68px; /* 根据前两行高度调整 */
         }
 
         /* 控制面板样式 */
@@ -111,21 +156,6 @@
         .control-panel .form-select {
             background-color: rgba(255, 255, 255, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        /* 列宽调整样式 */
-        .resize-handle {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 5px;
-            height: 100%;
-            background-color: transparent;
-            cursor: col-resize;
-        }
-
-        .resize-handle:hover {
-            background-color: #0078d4;
         }
     </style>
 {% endblock %}
@@ -180,24 +210,79 @@
 
         <!-- 数据表格 -->
         <div class="table-container">
-            <table class="table table-striped table-bordered table-hover" id="dataTable">
-                <thead class="table-dark">
-                <tr>
-                    {% for column in columns %}
-                        <th>{{ column }}</th>
-                    {% endfor %}
-                </tr>
-                </thead>
-                <tbody>
-                {% for row in data %}
+            <div class="frozen-table-wrapper">
+                <table class="frozen-table" id="dataTable">
+                    <thead>
                     <tr>
-                        {% for column in columns %}
-                            <td>{{ row[column] }}</td>
+                        <th rowspan="3" class="frozen-column frozen-corner"
+                            style="text-align: center;">公司名称</th>
+                        <th rowspan="3" class="frozen-column-2 frozen-corner"
+                            style="text-align: center;">品牌</th>
+                        <th rowspan="3"
+                            style="text-align: center;">柜位号</th>
+                        <th colspan="44">2025年1月</th>
+                        <th colspan="44">2025年2月</th>
+                        <th colspan="44">2025年3月</th>
+                        <th colspan="44">2025年4月</th>
+                        <th colspan="44">2025年5月</th>
+                        <th colspan="44">2025年6月</th>
+                        <th colspan="44">2025年7月</th>
+                        <th colspan="44">2025年8月</th>
+                        <th colspan="44">2025年9月</th>
+                        <th colspan="44">2025年10月</th>
+                        <th colspan="44">2025年11月</th>
+                        <th colspan="44">2025年12月</th>
+                    </tr>
+                    <tr>
+                        {% for i in range(0,12) %}
+                            <th colspan="2">租金</th>
+                            <th colspan="2">管理费</th>
+                            <th colspan="2">电费</th>
+                            <th colspan="2">水费</th>
+                            <th colspan="2">燃气费</th>
+                            <th colspan="2">现场服务费</th>
+                            <th colspan="2">多经场地使用费</th>
+                            <th colspan="2">多经管理费</th>
+                            <th colspan="2">多经电费</th>
+                            <th colspan="2">多经水费</th>
+{#                            <th colspan="2">多经燃气费</th>#}
+                            <th colspan="2">多经现场服务费</th>
+                            <th colspan="2">仓库使用费</th>
+                            <th colspan="2">仓库电费</th>
+                            <th colspan="2">仓库现场服务费</th>
+                            <th colspan="2">垃圾清运费</th>
+                            <th colspan="2">泔水费</th>
+                            <th colspan="2">消杀费</th>
+                            <th colspan="2">餐厨垃圾清运费</th>
+                            <th colspan="2">虫害防治费</th>
+                            <th colspan="2">隔油池清掏费</th>
+                            <th colspan="2">排油烟系统清洗费</th>
+                            <th colspan="2">停车费</th>
                         {% endfor %}
                     </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+                    <tr>
+                        {% for i in range(0,12) %}
+                            {% for i in range(0,22) %}
+                                <th>应收</th>
+                                <th>已收</th>
+                            {% endfor %}
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in data %}
+                        <tr>
+                            <td class="frozen-column">{{ row[columns[2]] }}</td>
+                            <td class="frozen-column">{{ row[columns[2]] }}</td>
+                            <td>{{ row[columns[3]] }}</td>
+                            {% for i in range(5,533) %}
+                                <td>{{ row[columns[i]] }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     {% endif %}
 {% endblock %}
@@ -259,6 +344,8 @@
                     dateFilter.value = today;
                 }
             }
+            // 动态调整冻结列的宽度
+            adjustFrozenColumns();
         });
 
         async function downloadReportAsync() {
@@ -312,6 +399,28 @@
                 downloadBtn.disabled = false;
             }
         }
+
+        // 调整冻结列的宽度
+        function adjustFrozenColumns() {
+            const table = document.getElementById('dataTable');
+            if (!table) return;
+
+            const firstRow = table.rows[0];
+            if (!firstRow) return;
+
+            // 获取第一列和第二列的宽度
+            const firstColWidth = firstRow.cells[0].offsetWidth;
+            const secondColWidth = firstRow.cells[1].offsetWidth;
+
+            // 设置第二列的left位置
+            const secondCols = document.querySelectorAll('.frozen-column-2');
+            secondCols.forEach(cell => {
+                cell.style.left = firstColWidth + 'px';
+            });
+        }
+
+        // 窗口调整大小时重新计算列宽
+        window.addEventListener('resize', adjustFrozenColumns);
     </script>
 
 {% endblock %}

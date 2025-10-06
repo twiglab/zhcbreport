@@ -16,7 +16,7 @@ def receivable_details_csv():
                                error=msg)
 
 
-    result = read_csv_data(f'receivable_details/{report_date}/tmp_001.csv'.format(datestr=report_date))
+    result = read_csv_data(f'receivable_details/shop_fee_per_day_{report_date}.csv'.format(datestr=report_date))
     if result['success']:
         return render_template('reports/receivable_details_csv.html',
                                report_date=report_date,
@@ -45,7 +45,7 @@ def receivable_details_csv_download():
                 'error': msg
             }), 400
 
-        csv_path = os.path.join(os.getenv('REPORT_DATA_BASE_DIR'), f'receivable_details/{report_date}/tmp_001.csv'.format(datestr=report_date))
+        csv_path = os.path.join(os.getenv('REPORT_DATA_BASE_DIR'), f'receivable_details/shop_fee_per_day_{report_date}.csv'.format(datestr=report_date))
 
         # 检查文件是否存在
         if not os.path.exists(csv_path):

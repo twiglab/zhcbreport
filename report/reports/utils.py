@@ -9,6 +9,7 @@ def read_csv_data(csv_file):
     try:
         csv_path = os.path.join(os.getenv('REPORT_DATA_BASE_DIR'), csv_file)
         df = pd.read_csv(csv_path)
+        # df.rename()
         df.fillna(0, inplace=True)
         data = df.to_dict('records')
         columns = df.columns.tolist()
@@ -29,3 +30,7 @@ def read_csv_data(csv_file):
             'success': False,
             'error': f'读取文件时出错: {str(e)}'
         }
+
+# columns_mapping = {
+#
+# }
